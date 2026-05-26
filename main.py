@@ -1,8 +1,12 @@
 import requests
 import time
 import datetime
+import os
+import threading
+from flask import Flask
 from telegram import Bot
 
+# ================== CẤU HÌNH ==================
 YOUTUBE_API_KEY = "AIzaSyD3g1nNRGTbNVqboQBTeL2PATWySGC_4kw"
 TELEGRAM_TOKEN = "86600605994:AAFrc6w-WoHgSF4jJwZJC1QDUScUc7jgfZq"
 TELEGRAM_CHAT_ID = 486709314
@@ -19,8 +23,22 @@ KEYWORDS = [
 ]
 
 bot = Bot(token=TELEGRAM_TOKEN)
-headers = {"User-Agent": "Mozilla/5.0"}
 
+# Dummy Flask server để Render không báo lỗi port
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Police Bodycam Agent is running!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+# Chạy Flask trong thread riêng
+threading.Thread(target=run_flask, daemon=True).start()
+
+# ================== PHẦN CHÍNH ==================
 def get_published_after():
     return (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS_AGO)).isoformat() + "Z"
 
@@ -44,7 +62,7 @@ def send_telegram(video):
 
 def main():
     published_after = get_published_after()
-    print(f"🔍 Đang quét Police Bodycam...")
+    print(f"🔍 Đang quét Police Bodycam & True Crime...")
 
     for keyword in KEYWORDS:
         search_url = "https://www.googleapis.com/youtube/v3/search"
@@ -60,7 +78,7 @@ def main():
             "key": YOUTUBE_API_KEY
         }
 
-        resp = requests.get(search_url, params=params, headers=headers).json()
+        resp = requests.get(search_url, params=params).json()
 
         for item in resp.get("items", []):
             video_id = item["id"]["videoId"]
@@ -71,7 +89,7 @@ def main():
                 "id": video_id,
                 "key": YOUTUBE_API_KEY
             }
-            detail = requests.get(detail_url, params=detail_params, headers=headers).json()
+            detail = requests.get(detail_url, params=detail_params).json()
 
             if not detail.get("items"):
                 continue
@@ -92,6 +110,7 @@ def main():
                 })
 
 if __name__ == "__main__":
+    print("🚀 Agent đã khởi động thành công!")
     while True:
         try:
             main()
