@@ -13,11 +13,9 @@ TELEGRAM_CHAT_ID = 486709314
 
 DAYS_AGO = 7
 
-# Ngưỡng mới theo yêu cầu của anh
-MIN_VPH = 5000          # 5000 views/giờ
-MIN_12H_VIEWS = 50000   # 50k views trong 12 giờ
-MIN_24H_VIEWS = 100000  # 100k views trong 24 giờ
-MIN_TOTAL_VIEWS = 200000 # 200k views tổng (trong 7 ngày)
+# Ngưỡng mới theo yêu cầu
+MIN_VPH = 3000           # 3000 views/giờ
+MIN_TOTAL_VIEWS = 100000 # 100.000 views tổng trong 7 ngày
 
 KEYWORDS = [
     "bodycam", "police body cam", "police bodycam", "body camera", "code blue cam",
@@ -28,7 +26,7 @@ KEYWORDS = [
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
-# Dummy Flask server (fix lỗi port)
+# Dummy Flask server
 app = Flask(__name__)
 @app.route('/')
 def home():
@@ -50,17 +48,13 @@ def should_send_video(views, hours):
     views = int(views)
     if views >= MIN_TOTAL_VIEWS:
         return True
-    if hours > 0 and views / hours >= MIN_VPH:
-        return True
-    if hours <= 12 and views >= MIN_12H_VIEWS:
-        return True
-    if hours <= 24 and views >= MIN_24H_VIEWS:
+    if hours > 0 and (views / hours) >= MIN_VPH:
         return True
     return False
 
 def send_telegram(video):
     message = f"""
-🚨 **VIDEO BODYCAM / TRUE CRIME NÓNG**
+🚨 **VIDEO BODYCAM / TRUE CRIME HOT**
 
 📌 **Tiêu đề**: {video['title']}
 🔗 **Link**: https://youtube.com/watch?v={video['videoId']}
