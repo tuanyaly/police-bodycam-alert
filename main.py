@@ -3,6 +3,7 @@ import time
 import datetime
 import os
 import threading
+import asyncio
 from flask import Flask
 from telegram import Bot
 
@@ -12,7 +13,7 @@ TELEGRAM_TOKEN = "86600605994:AAFrc6w-WoHgSF4jJwZJC1QDUScUc7jgfZq"
 TELEGRAM_CHAT_ID = 486709314
 
 DAYS_AGO = 7
-MIN_TOTAL_VIEWS = 50000   # Chỉ cần 50.000 views trong 7 ngày là gửi
+MIN_TOTAL_VIEWS = 50000   # Chỉ cần 50k views là gửi
 
 KEYWORDS = [
     "bodycam", "police body cam", "police bodycam", "body camera", "code blue cam",
@@ -35,10 +36,7 @@ def run_flask():
 
 threading.Thread(target=run_flask, daemon=True).start()
 
-# ================== HÀM CHÍNH ==================
-def get_published_after():
-    return (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS_AGO)).isoformat() + "Z"
-
+# ================== HÀM GỬI TELEGRAM (ĐÃ SỬA) ==================
 def send_telegram(video):
     message = f"""
 🚨 **VIDEO BODYCAM ĐẠT 50K VIEWS**
@@ -48,8 +46,16 @@ def send_telegram(video):
 👀 **Views**: {video['views']:,} 
 🕒 **Up**: {video['published_at'][:10]}
     """.strip()
-    bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode="HTML")
-    print(f"✅ Đã gửi: {video['title'][:60]}...")
+    
+    try:
+        asyncio.run(bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode="HTML"))
+        print(f"✅ Đã gửi thành công: {video['title'][:60]}...")
+    except Exception as e:
+        print(f"❌ Lỗi gửi Telegram: {e}")
+
+# ================== HÀM CHÍNH ==================
+def get_published_after():
+    return (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS_AGO)).isoformat() + "Z"
 
 def main():
     published_after = get_published_after()
