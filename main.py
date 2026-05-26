@@ -12,7 +12,7 @@ TELEGRAM_TOKEN = "86600605994:AAFrc6w-WoHgSF4jJwZJC1QDUScUc7jgfZq"
 TELEGRAM_CHAT_ID = 486709314
 
 DAYS_AGO = 7
-MIN_TOTAL_VIEWS = 50000   # Chỉ cần 50.000 views là gửi
+MIN_TOTAL_VIEWS = 50000   # Chỉ cần 50.000 views trong 7 ngày là gửi
 
 KEYWORDS = [
     "bodycam", "police body cam", "police bodycam", "body camera", "code blue cam",
@@ -28,9 +28,11 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return "Agent is running!"
+
 def run_flask():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 threading.Thread(target=run_flask, daemon=True).start()
 
 # ================== HÀM CHÍNH ==================
@@ -44,7 +46,7 @@ def send_telegram(video):
 📌 **Tiêu đề**: {video['title']}
 🔗 **Link**: https://youtube.com/watch?v={video['videoId']}
 👀 **Views**: {video['views']:,} 
-🕒 **Up**: {video['published_at'][:10]} 
+🕒 **Up**: {video['published_at'][:10]}
     """.strip()
     bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode="HTML")
     print(f"✅ Đã gửi: {video['title'][:60]}...")
@@ -79,4 +81,27 @@ def main():
             }
             detail = requests.get(detail_url, params=detail_params).json()
 
-            if not
+            if not detail.get("items"):
+                continue
+
+            v = detail["items"][0]
+            views = int(v["statistics"].get("viewCount", 0))
+
+            if views >= MIN_TOTAL_VIEWS:
+                send_telegram({
+                    "title": v["snippet"]["title"],
+                    "videoId": video_id,
+                    "views": views,
+                    "published_at": v["snippet"]["publishedAt"]
+                })
+
+if __name__ == "__main__":
+    print("🚀 Agent TEST đã khởi động!")
+    while True:
+        try:
+            main()
+            print(f"⏳ Ngủ 15 phút... ({datetime.datetime.now().strftime('%H:%M:%S')})")
+            time.sleep(900)
+        except Exception as e:
+            print("Lỗi:", e)
+            time.sleep(60)
