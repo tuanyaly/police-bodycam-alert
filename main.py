@@ -7,15 +7,15 @@ from flask import Flask
 from telegram import Bot
 
 # ================== CẤU HÌNH MỚI ==================
-YOUTUBE_API_KEY = "AIzaSyD3g1nNRGTbNVqboQBTeL2PATWySGC_4kw"
+YOUTUBE_API_KEY = "AIzaSyA_qHTbkd756XeAzgEuci1IIB8QWucXSoM"
 TELEGRAM_TOKEN = "86600605994:AAFrc6w-WoHgSF4jJwZJC1QDUScUc7jgfZq"
 TELEGRAM_CHAT_ID = 486709314
 
 DAYS_AGO = 7
 
-# Ngưỡng mới theo yêu cầu
+# Ngưỡng mới
 MIN_VPH = 3000           # 3000 views/giờ
-MIN_TOTAL_VIEWS = 100000 # 100.000 views tổng trong 7 ngày
+MIN_TOTAL_VIEWS = 100000 # 100.000 views tổng
 
 KEYWORDS = [
     "bodycam", "police body cam", "police bodycam", "body camera", "code blue cam",
